@@ -1,22 +1,15 @@
 'use strict'
-const fp = require('fastify-plugin')
 
-const catToPrefix = {
-  electronics: 'A',
-  confectionery: 'B'
-}
+const data = [
+  {id: 'B1', name: 'Chocolate Bar', rrp: '22.40', info: 'Delicious overpriced chocolate.'}
+]
 
-const calculateID = (idPrefix, data) => {
-  const sorted = [...(new Set(data.map(({id}) => id)))]
-  const next = Number(sorted.pop().slice(1)) + 1
-  return `${idPrefix}${next}`
-}
-
-module.exports = fp(async function (fastify, opts) {
-  fastify.decorateRequest('mockDataInsert', function insert (category, data) {
-    const request = this
-    const idPrefix = catToPrefix[category]
-    const id = calculateID(idPrefix, data)
-    data.push({id, ...request.body})
+module.exports = async function (fastify, opts) {
+  fastify.get('/', async function (request, reply) {
+    return data
   })
-})
+  fastify.post('/', async function (request, reply) {
+    request.mockDataInsert(opts.prefix.slice(1), data)
+    return data
+  })
+}
